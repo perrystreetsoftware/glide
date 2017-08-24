@@ -182,10 +182,17 @@ class DecodeJob<A, T, Z> {
     }
 
     private Resource<T> decodeFromSourceData(A data) throws IOException {
-        final Resource<T> decoded;
+        Resource<T> decoded = null;
         if (diskCacheStrategy.cacheSource()) {
             decoded = cacheAndDecodeSourceData(data);
-        } else {
+        }
+
+        /**
+         * The default for DiskCacheStrategy.SOURCE is to fail when a downloaded image cannot be written to the disk
+         * cache.
+         * We want to still return the downloaded resource though.
+         */
+        if (decoded == null){
             long startTime = LogTime.getLogTime();
             decoded = loadProvider.getSourceDecoder().decode(data, width, height);
             if (Log.isLoggable(TAG, Log.VERBOSE)) {
